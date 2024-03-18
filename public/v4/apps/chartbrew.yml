@@ -70,7 +70,7 @@ caproverOneClickApp:
 
         - id: $$cap_viteapp_api-host
           label: Chartbrew API Host
-          defaultValue: 'http://192.168.64.5:4019'
+          defaultValue: 'http://0.0.0.0:4019'
           description: The URL on which the Chartbrew API listens.
 
     instructions:
