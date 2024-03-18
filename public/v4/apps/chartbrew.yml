@@ -1,0 +1,90 @@
+captainVersion: 4
+services:
+    # database container
+    database:
+        image: mysql:$$cap_mysql_version
+        restart: always
+        volumes:
+          - $$cap_appname-db-data:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: 'chartbrew'
+            MYSQL_USER: 'chartbrew'
+            MYSQL_PASSWORD: $$cap_mysql_password
+            MYSQL_ROOT_PASSWORD: $$cap_mysql_root_password
+
+    # Chartbrew container 
+    chartbrew:
+        image: razvanilin/chartbrew
+        restart: always
+        volume:
+          - $$cap_appname-app-uploads:/code/server/uploads
+          - $$cap_appname-app-settings:/code/server/settings.js
+        environment:
+            # Use a stronger, environment variable-based secret for security (replace with your actual secret)
+            CHARTBREW_SECRET: $$cap_strong_secret
+            CB_API_HOST: $$cap_cb_api_host
+            CB_API_PORT: $$cap_cb_api_port
+            CB_DB_HOST: srv-captain--database # Use a service name instead of specific hostname (more secure)
+            CB_DB_PORT: 3306
+            CB_DB_NAME: chartbrew
+            CB_DB_PASSWORD: $$cap_mysql_root_password
+            CB_DB_USERNAME: root
+            # Avoid embedding credentials directly in the YAML (highly insecure)
+            # Use environment variables like CHARTBREW_DB_USERNAME and CHARTBREW_DB_PASSWORD instead
+            # VITE_APP_CLIENT_HOST: $$cap_viteapp_client-host
+            # VITE_APP_CLIENT_PORT: $$cap_viteapp_client-port
+            VITE_APP_API_HOST: $$cap_viteapp_api-host
+
+caproverOneClickApp:
+    variables:
+        - id: $$cap_mysql_version
+          label: Mysql version
+          defaultValue: '8.0'
+          description: Specify the MYSQL version here
+
+        - id: $$cap_strong_secret
+          label: Chartbrew Secret
+          defaultValue: '***' # Mask the default value for security
+          description: A strong, random secret for Chartbrew. Never store sensitive information directly in the YAML file. Use environment variables instead.
+
+        - id: $$cap_mysql_root_password
+          label: Root password for mysql
+          defaultValue: 'password'
+          description: Add strong  password for root user in database
+
+        - id: $$cap_mysql_password
+          label: MySQL Password
+          defaultValue: '***' # Mask the default value for security
+          description: User password mysql
+
+        - id: $$cap_cb_api_host
+          label: Chartbrew API Host
+          defaultValue: '0.0.0.0'
+          description: Enter the IP address of the Chartbrew API host (usually 0.0.0.0 for internal access).
+
+        - id: $$cap_cb_api_port
+          label: Chartbrew API Port
+          defaultValue: '4019'
+          description: The port on which the Chartbrew API listens (default is 4019).
+          
+
+        - id: $$cap_viteapp_api-host
+          label: Chartbrew API Host
+          defaultValue: 'http://192.168.64.5:4019'
+          description: The URL on which the Chartbrew API listens.
+
+    instructions:
+        start: >-
+            Opensource is cool.
+
+            * **Configure the `VITE_APP_*` variables (if used) in the Dashboard after deployment.**
+
+        end: >
+            Chartbrew is deployed and available at $$cap_appname. Please expose port 4018 and 4019. Add port mapping.
+
+            Before starting Chartbrew, it's recommended to wait for 3-4 minute for the application to be ready. During this time, you might see a 502 error page.
+
+    displayName: 'Chartbrew'
+    isOfficial: false # Set to false as it's not an official CapRover app
+    description: Chartbrew is a tool for creating live reporting dashboards.
+    documentation: https://docs.chartbrew.com/deployment/#run-the-application-with-docker
